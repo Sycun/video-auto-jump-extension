@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "视频自动跳转",
+  "version": "1.0",
+  "description": "自动跳转并播放指定网站的视频",
+  "permissions": [
+    "scripting",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "http://www.mayikt.vip/showcoulist.html#*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://www.mayikt.vip/showcoulist.html#*"],
+      "js": ["content.js"]
+    }
+  ]
+}
