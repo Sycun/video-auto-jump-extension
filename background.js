@@ -21,3 +21,13 @@ chrome.action.onClicked.addListener((tab) => {
     files: ['content.js']
   });
 });
+
+// 扩展状态监听
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.action === 'toggleExtension') {
+    chrome.action.setBadgeText({
+      text: message.enabled ? 'ON' : 'OFF'
+    });
+    chrome.storage.local.set({ extensionEnabled: message.enabled });
+  }
+});

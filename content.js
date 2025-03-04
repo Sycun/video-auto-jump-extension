@@ -130,18 +130,31 @@ function enhancedVideoControl() {
   if (video) {
     // 初始化音量设置
     if (localStorage.getItem('videoVolume')) {
-      video.volume = parseFloat(localStorage.getItem('videoVolume'));
+      const savedVolume = parseFloat(localStorage.getItem('videoVolume'));
+      if (!isNaN(savedVolume)) {
+        video.volume = savedVolume;
+        console.log(`${CONFIG.LOG_PREFIX} 已加载保存音量: ${savedVolume}`);
+      }
+    } else {
+      console.debug(`${CONFIG.LOG_PREFIX} 无保存音量，使用默认值`);
     }
 
     // 自动播放处理
     const tryPlay = () => {
       try {
+        // 清除现有定时器
+        if (retryTimer) clearTimeout(retryTimer);
+        
         video.play();
         console.log(`${CONFIG.LOG_PREFIX} 视频自动播放成功`);
         
+        // 添加暂停事件监听
+        video.addEventListener('pause', handleManualPause);
         video.addEventListener('ended', handleVideoEnd);
         video.addEventListener('volumechange', () => {
-          localStorage.setItem('videoVolume', video.volume);
+          const currentVolume = video.volume;
+          localStorage.setItem('videoVolume', currentVolume);
+          console.debug(`${CONFIG.LOG_PREFIX} 音量已更新: ${currentVolume}`);
         });
       } catch (error) {
         console.error(`${CONFIG.LOG_PREFIX} 播放失败:`, error);
@@ -151,26 +164,49 @@ function enhancedVideoControl() {
 
     // 视频结束处理
     const handleVideoEnd = () => {
-      const nextButton = document.querySelector(CONFIG.SELECTORS.NEXT_BUTTON);
+      console.debug(`${CONFIG.LOG_PREFIX} 开始处理视频结束事件`);
+      
+      // 在播放器容器内查找下一集按钮
+      const playerContainer = document.querySelector(CONFIG.SELECTORS.PLAYER_CONTAINER);
+      const nextButton = playerContainer ? 
+        playerContainer.querySelector(CONFIG.SELECTORS.NEXT_BUTTON) : 
+        document.querySelector(CONFIG.SELECTORS.NEXT_BUTTON);
+      
       if (nextButton) {
+        console.log(`${CONFIG.LOG_PREFIX} 找到下一集按钮:`, nextButton);
         nextButton.click();
-        console.log(`${CONFIG.LOG_PREFIX} 自动跳转下一集`);
+        console.log(`${CONFIG.LOG_PREFIX} 已触发跳转`);
       } else {
+        console.debug(`${CONFIG.LOG_PREFIX} 未找到按钮，尝试播放列表跳转`);
         const playlist = document.querySelector(CONFIG.SELECTORS.PLAYLIST);
         if (playlist) {
-          const currentIndex = Array.from(playlist.children).findIndex(
-            item => item.classList.contains('active')
+          const activeItems = Array.from(playlist.children).filter(item => 
+            item.classList.contains('active') || 
+            item.getAttribute('aria-selected') === 'true'
           );
-          if (currentIndex > -1 && playlist.children[currentIndex + 1]) {
-            playlist.children[currentIndex + 1].click();
+          
+          if (activeItems.length > 0) {
+            const currentIndex = Array.from(playlist.children).indexOf(activeItems[0]);
+            if (currentIndex > -1 && playlist.children[currentIndex + 1]) {
+              console.log(`${CONFIG.LOG_PREFIX} 找到第${currentIndex + 1}集`);
+              playlist.children[currentIndex + 1].click();
+            }
           }
         }
       }
     };
 
+    // 手动暂停处理
+    const handleManualPause = () => {
+      console.log(`${CONFIG.LOG_PREFIX} 检测到手动暂停`);
+      clearTimeout(retryTimer);
+      video.removeEventListener('ended', handleVideoEnd);
+      video.removeEventListener('pause', handleManualPause);
+    };
+
     // 启动播放
     if (video.paused) {
-      setTimeout(tryPlay, CONFIG.TIMING.INIT_DELAY);
+      retryTimer = setTimeout(tryPlay, CONFIG.TIMING.INIT_DELAY);
     }
   }
 }

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<title>视频自动跳转扩展</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 200px;
+      padding: 15px;
+      font-family: Arial, sans-serif;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+    .switch input { 
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 34px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .slider:hover {
+      background-color: #b3b3b3;
+    }
+
+    .status-text {
+      margin-left: 10px;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+    
+    .status-enabled {
+      color: #2196F3;
+    }
+    
+    .status-disabled {
+      color: #757575;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #2196F3;
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+  </style>
+</head>
+<body>
+  <h3>视频自动跳转</h3>
+  <label class="switch">
+    <input type="checkbox" id="toggleSwitch" title="切换视频自动跳转功能" aria-label="切换视频自动跳转功能">
+    <span class="slider"></span>
+  </label>
+  <span id="statusText" class="status-text">已启用</span>
+
+  <script src="popup.js"></script>
+</body>
+</html>
